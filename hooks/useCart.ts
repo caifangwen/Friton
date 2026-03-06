@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 
 export type CartItem = {
   productId: string;
@@ -28,6 +28,19 @@ function clampQuantity(qty: number): number {
   return Math.max(1, Math.floor(qty));
 }
 
+// SSR-safe storage: no-ops on server, uses localStorage on client
+const safeStorage = createJSONStorage(() => {
+  if (typeof window === "undefined") {
+    // Server: return a dummy storage that does nothing
+    return {
+      getItem: () => null,
+      setItem: () => {},
+      removeItem: () => {},
+    };
+  }
+  return window.localStorage;
+});
+
 export const useCart = create<CartState>()(
   persist(
     (set, get) => ({
@@ -35,7 +48,6 @@ export const useCart = create<CartState>()(
 
       add: (input) => {
         const quantityToAdd = clampQuantity(input.quantity ?? 1);
-
         set((state) => {
           const existing = state.items.find((i) => i.productId === input.productId);
           if (!existing) {
@@ -48,7 +60,6 @@ export const useCart = create<CartState>()(
             };
             return { items: [...state.items, next] };
           }
-
           return {
             items: state.items.map((i) =>
               i.productId === input.productId
@@ -60,7 +71,9 @@ export const useCart = create<CartState>()(
       },
 
       remove: (productId) => {
-        set((state) => ({ items: state.items.filter((i) => i.productId !== productId) }));
+        set((state) => ({
+          items: state.items.filter((i) => i.productId !== productId),
+        }));
       },
 
       clear: () => set({ items: [] }),
@@ -82,8 +95,8 @@ export const useCart = create<CartState>()(
     {
       name: "cart",
       version: 1,
+      storage: safeStorage,
       partialize: (state) => ({ items: state.items }),
     },
   ),
 );
-
