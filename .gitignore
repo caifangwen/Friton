@@ -20,21 +20,43 @@
 # production
 /build
 
+# turbopack / turbo
+.turbo/
+
 # misc
 .DS_Store
+Thumbs.db
+Desktop.ini
 *.pem
+
+# editors / IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# caches
+.eslintcache
+.stylelintcache
 
 # debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+*.log
 
 # env files (can opt-in for committing if needed)
 .env*
 
 # vercel
 .vercel
+
+# supabase (local dev artifacts)
+supabase/.branches/
+supabase/.temp/
+supabase/.seed/
+supabase/logs/
 
 # typescript
 *.tsbuildinfo
